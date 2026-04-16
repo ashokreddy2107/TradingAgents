@@ -312,11 +312,15 @@ def get_balance_sheet(
         ticker_obj = yf.Ticker(ticker.upper())
 
         if freq.lower() == "quarterly":
-            data = yf_retry(lambda: ticker_obj.quarterly_balance_sheet)
+            data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_balance_sheet'))
+            data = filter_financials_by_date(data, curr_date)
+            if data.empty:
+                freq = "annual"
+                data = yf_retry(lambda: getattr(ticker_obj, 'balance_sheet'))
+                data = filter_financials_by_date(data, curr_date)
         else:
-            data = yf_retry(lambda: ticker_obj.balance_sheet)
-
-        data = filter_financials_by_date(data, curr_date)
+            data = yf_retry(lambda: getattr(ticker_obj, 'balance_sheet'))
+            data = filter_financials_by_date(data, curr_date)
 
         if data.empty:
             return f"No balance sheet data found for symbol '{ticker}'"
@@ -344,11 +348,15 @@ def get_cashflow(
         ticker_obj = yf.Ticker(ticker.upper())
 
         if freq.lower() == "quarterly":
-            data = yf_retry(lambda: ticker_obj.quarterly_cashflow)
+            data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_cashflow'))
+            data = filter_financials_by_date(data, curr_date)
+            if data.empty:
+                freq = "annual"
+                data = yf_retry(lambda: getattr(ticker_obj, 'cashflow'))
+                data = filter_financials_by_date(data, curr_date)
         else:
-            data = yf_retry(lambda: ticker_obj.cashflow)
-
-        data = filter_financials_by_date(data, curr_date)
+            data = yf_retry(lambda: getattr(ticker_obj, 'cashflow'))
+            data = filter_financials_by_date(data, curr_date)
 
         if data.empty:
             return f"No cash flow data found for symbol '{ticker}'"
@@ -376,11 +384,15 @@ def get_income_statement(
         ticker_obj = yf.Ticker(ticker.upper())
 
         if freq.lower() == "quarterly":
-            data = yf_retry(lambda: ticker_obj.quarterly_income_stmt)
+            data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_income_stmt'))
+            data = filter_financials_by_date(data, curr_date)
+            if data.empty:
+                freq = "annual"
+                data = yf_retry(lambda: getattr(ticker_obj, 'income_stmt'))
+                data = filter_financials_by_date(data, curr_date)
         else:
-            data = yf_retry(lambda: ticker_obj.income_stmt)
-
-        data = filter_financials_by_date(data, curr_date)
+            data = yf_retry(lambda: getattr(ticker_obj, 'income_stmt'))
+            data = filter_financials_by_date(data, curr_date)
 
         if data.empty:
             return f"No income statement data found for symbol '{ticker}'"
