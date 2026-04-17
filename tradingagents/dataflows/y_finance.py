@@ -5,6 +5,7 @@ import pandas as pd
 import yfinance as yf
 import os
 from .stockstats_utils import StockstatsUtils, _clean_dataframe, yf_retry, load_ohlcv, filter_financials_by_date
+from .ticker_utils import resolve_yfinance_ticker
 
 def get_YFin_data_online(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -15,8 +16,11 @@ def get_YFin_data_online(
     datetime.strptime(start_date, "%Y-%m-%d")
     datetime.strptime(end_date, "%Y-%m-%d")
 
+    # Resolve ticker (e.g. handle missing exchange suffixes)
+    resolved_symbol = resolve_yfinance_ticker(symbol)
+    
     # Create ticker object
-    ticker = yf.Ticker(symbol.upper())
+    ticker = yf.Ticker(resolved_symbol.upper())
 
     # Fetch historical data for the specified date range
     data = yf_retry(lambda: ticker.history(start=start_date, end=end_date))
@@ -251,7 +255,8 @@ def get_fundamentals(
 ):
     """Get company fundamentals overview from yfinance."""
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
+        resolved_ticker = resolve_yfinance_ticker(ticker)
+        ticker_obj = yf.Ticker(resolved_ticker.upper())
         info = yf_retry(lambda: ticker_obj.info)
 
         if not info:
@@ -309,7 +314,8 @@ def get_balance_sheet(
 ):
     """Get balance sheet data from yfinance."""
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
+        resolved_ticker = resolve_yfinance_ticker(ticker)
+        ticker_obj = yf.Ticker(resolved_ticker.upper())
 
         if freq.lower() == "quarterly":
             data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_balance_sheet'))
@@ -345,7 +351,8 @@ def get_cashflow(
 ):
     """Get cash flow data from yfinance."""
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
+        resolved_ticker = resolve_yfinance_ticker(ticker)
+        ticker_obj = yf.Ticker(resolved_ticker.upper())
 
         if freq.lower() == "quarterly":
             data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_cashflow'))
@@ -381,7 +388,8 @@ def get_income_statement(
 ):
     """Get income statement data from yfinance."""
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
+        resolved_ticker = resolve_yfinance_ticker(ticker)
+        ticker_obj = yf.Ticker(resolved_ticker.upper())
 
         if freq.lower() == "quarterly":
             data = yf_retry(lambda: getattr(ticker_obj, 'quarterly_income_stmt'))
@@ -415,7 +423,8 @@ def get_insider_transactions(
 ):
     """Get insider transactions data from yfinance."""
     try:
-        ticker_obj = yf.Ticker(ticker.upper())
+        resolved_ticker = resolve_yfinance_ticker(ticker)
+        ticker_obj = yf.Ticker(resolved_ticker.upper())
         data = yf_retry(lambda: ticker_obj.insider_transactions)
         
         if data is None or data.empty:

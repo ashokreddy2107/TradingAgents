@@ -8,6 +8,7 @@ from stockstats import wrap
 from typing import Annotated
 import os
 from .config import get_config
+from .ticker_utils import resolve_yfinance_ticker
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,8 @@ def load_ohlcv(symbol: str, curr_date: str) -> pd.DataFrame:
     filtered out so backtests never see future prices.
     """
     config = get_config()
+    # Resolve ticker (e.g. handle missing exchange suffixes)
+    symbol = resolve_yfinance_ticker(symbol)
     curr_date_dt = pd.to_datetime(curr_date)
 
     # Cache uses a fixed window (15y to today) so one file per symbol
